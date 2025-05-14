@@ -1,0 +1,72 @@
+version: "3"
+services:
+  outline:
+    image: outlinewiki/outline
+    environment:
+      - DATABASE_URL=postgres://postgres:password@outline-postgres:5432/outline
+      - REDIS_URL=redis://redis:6379
+      - SECRET_KEY=7e3c100b817537e07b5a8ee029d6a7bc9cdf8da355e2617ce4e33137cbb29340
+      - UTILS_SECRET=myutilsecret
+      - URL=https://bb01-103-88-237-230.ngrok-free.app
+      - PORT=3000
+      - PGSSLMODE=disable
+      - OIDC_CLIENT_ID=outline
+      - OIDC_CLIENT_SECRET=e0101d69cc334ee493f9d53b09d4b25f
+      - OIDC_AUTH_URI=https://d5d3-103-88-237-230.ngrok-free.app/realms/kb-chat-demo-fixed/protocol/openid-connect/auth
+      - OIDC_TOKEN_URI=https://d5d3-103-88-237-230.ngrok-free.app/realms/kb-chat-demo-fixed/protocol/openid-connect/token
+      - OIDC_USERINFO_URI=https://d5d3-103-88-237-230.ngrok-free.app/realms/kb-chat-demo-fixed/protocol/openid-connect/userinfo
+      - OIDC_DISPLAY_NAME=Keycloak
+    ports:
+      - "4100:3000"
+    depends_on:
+      - outline-postgres
+      - redis
+
+  outline-postgres:
+    image: postgres:12
+    restart: always
+    environment:
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: outline
+
+  redis:
+    image: redis
+    restart: always
+
+  keycloak:
+    image: quay.io/keycloak/keycloak:23.0.7
+    environment:
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: admin
+    command: start-dev --import-realm
+    ports:
+      - "8180:8080"
+    volumes:
+      - ./keycloak/realm-export.json:/opt/keycloak/data/import/realm-export.json
+
+  chatwoot-postgres:
+    image: ankane/pgvector:latest
+    restart: always
+    environment:
+      POSTGRES_DB: chatwoot
+      POSTGRES_USER: chatwoot
+      POSTGRES_PASSWORD: chatwoot
+
+  chatwoot:
+    image: chatwoot/chatwoot:latest
+    ports:
+      - "4000:3000"
+    environment:
+      RAILS_ENV: production
+      SECRET_KEY_BASE: 4961d9528e074c7082a81705ae6390a70bc55c46a8744cac80a127ef34db05c9
+      FRONTEND_URL: http://localhost:4000
+      ENABLE_ACCOUNT_SIGNUP: "true"
+      POSTGRES_HOST: chatwoot-postgres
+      POSTGRES_USERNAME: chatwoot
+      POSTGRES_PASSWORD: chatwoot
+      POSTGRES_DATABASE: chatwoot
+      REDIS_URL: redis://redis:6379
+    depends_on:
+      - chatwoot-postgres
+      - redis
+    command: ["bundle", "exec", "rails", "s", "-b", "0.0.0.0"]
