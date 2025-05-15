@@ -87,8 +87,6 @@ PORT=7000
 
 ## 🖼️ Evidence
 
-We recommend including the following in your submission:
-
 ### Screenshots
 
 * ✅ Keycloak realm + client settings
@@ -111,5 +109,3 @@ This implementation successfully integrates all components:
 * 📚 **Knowledge base via Outline**
 * 💬 **Chat interface and automation with Chatwoot**
 * 🤖 **Bot that dynamically responds using Outline-styled answers**
-
-Let me know if you want a video recorded or help drafting the submission email.
